@@ -1,5 +1,7 @@
 # Concurrency and asynchrony
 
+## Introduction
+
 Applications need to deal with more than one thing happening at a time (**concurrency**).
 
 The mechanism by which a program can simultaneously execute code is called **multithreading**.
@@ -81,3 +83,69 @@ While waiting on a Sleep or Join, a thread is **blocked**.
 A thread is deemed blocked when its execution is paused for some reason, such as when Sleeping or waiting for another to end via Join. A blocked thread immediately yields its processor time slice, and from then on consumes no processor time until its blocking condition is satisfied.
 
 When a thread blocks or unblocks, the operating system performs a **context switch**. This incurs a small overhead, typically one or two microseconds.
+
+## Local Versus Shared State
+
+The CLR assigns each thread its own memory stack so that local variables are kept separate.
+
+Threads share data if they have a common reference to the same object instance:
+
+```c#
+
+class ThreadTest
+{
+    bool _done;
+    static void Main()
+    {
+        ThreadTest tt = new ThreadTest(); // Create a common instance
+        new Thread(tt.Go).Start();
+        tt.Go();
+    }
+    void Go() // Note that this is an instance method
+    {
+        if (!_done) { _done = true; Console.WriteLine("Done"); }
+    }
+}
+
+```
+
+Local variables captured by a lambda expression or anonymous delegate are converted by the compiler into fields, and so can also be shared:
+
+```c#
+class ThreadTest
+{
+    static void Main()
+    {
+        bool done = false;
+        ThreadStart action = () =>
+        {
+            if (!done) { done = true; Console.WriteLine("Done"); }
+        };
+        new Thread(action).Start();
+        action();
+    }
+}
+```
+
+Static fields offer another way to share data between threads:
+
+```c#
+
+class ThreadTest
+{
+    static bool _done; // Static fields are shared between all threads
+    // in the same application domain.
+    static void Main()
+    {
+        new Thread(Go).Start();
+        Go();
+    }
+    static void Go()
+    {
+        if (!_done) { _done = true; Console.WriteLine("Done"); }
+    }
+}
+
+```
+
+it’s better to avoid shared state altogether where possible. We’ll see later how asynchronous programming patterns help with this.
