@@ -247,3 +247,19 @@ partial class MyWindow : Window
     }
 }
 ```
+
+## The Thread Pool
+
+Whenever you start a thread, a few hundred microseconds are spent organizing such things as a fresh local variable stack. The **thread pool** cuts this overhead by having a pool of pre-created recyclable threads. Thread pooling is essential for efficient parallel programming and fine-grained concurrency; it allows short operations to run without being overwhelmed with the overhead of thread startup.
+
+There are a few things to be wary of when using pooled threads:
+• You cannot set the Name of a pooled thread, making debugging more difficult (although you can attach a description when debugging in Visual Studio’s Threads window).
+• Pooled threads are always background threads.
+• Blocking pooled threads can degrade performance
+
+The easiest way to explicitly run something on a pooled thread is to use *Task.Run* (we’ll cover this in more detail in the following section):
+
+```c#
+// Task is in System.Threading.Tasks
+Task.Run (() => Console.WriteLine ("Hello from the thread pool"));
+```
