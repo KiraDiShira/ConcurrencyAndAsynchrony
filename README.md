@@ -38,3 +38,10 @@ yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy
 yyyyyyyyyyyyyxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 ```
+
+On a single-core computer, the operating system must allocate **slices** of time to each thread (typically 20 ms in Windows) to simulate
+concurrency, resulting in repeated blocks of x and y. On a multicore or multiprocessor machine, the two threads can genuinely execute in parallel, although you still get repeated blocks of x and y in this example because of subtleties in the mechanism by which Console handles concurrent requests.
+
+Once started, a thread’s **IsAlive** property returns true, until the point where the thread ends. A thread ends when the delegate passed to the Thread’s constructor finishes executing. Once ended, a thread cannot restart.
+
+Each thread has a **Name** property that you can set for the benefit of debugging.
