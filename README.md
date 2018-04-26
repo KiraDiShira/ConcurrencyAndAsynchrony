@@ -201,3 +201,49 @@ public static void Main()
 static void Go() { throw null; } // Throws a NullReferenceException
 
 ```
+
+## Foreground Versus Background Threads
+
+By default, threads you create explicitly are **foreground threads**. Foreground threads keep the application alive for as long as any one of them is running, whereas **background threads** do not.
+
+## Thread Priority
+
+A thread’s Priority property determines how much execution time it gets relative to other active threads in the operating system, on the following scale:
+
+```c#
+
+enum ThreadPriority { Lowest, BelowNormal, Normal, AboveNormal, Highest }
+
+```
+
+## Threading in Rich-Client Applications
+
+In WPF, UWP, and Windows Forms applications, executing long-running operations on the main thread makes the application unresponsive, because the main thread also processes the message loop that performs rendering and handles keyboard and mouse events. A popular approach is to start up “worker” threads for time-consuming operations. The code on a worker thread runs a time-consuming operation and then updates the UI when complete. However, all rich-client applications have a threading model whereby UI elements and controls can be accessed only from the thread that created them (typically the main UI thread). Violating this causes either unpredictable behavior, or an exception to be thrown. Hence when you want to update the UI from a worker thread, you must forward the request to the UI thread (the technical term is **marshal**).
+
+## Synchronization Contexts
+
+In the System.ComponentModel namespace, there’s an abstract class called **SynchronizationContext** that enables the generalization of thread marshaling. The rich-client APIs for mobile and desktop (UWP, WPF, and Windows Forms) each define and instantiate SynchronizationContext subclasses, which you can obtain via the static property SynchronizationContext.Current (while running on a UI thread). Capturing this property lets you later “post” to UI controls from a worker thread:
+
+```c#
+partial class MyWindow : Window
+{
+    SynchronizationContext _uiSyncContext;
+    public MyWindow()
+    {
+        InitializeComponent();
+        // Capture the synchronization context for the current UI thread:
+        _uiSyncContext = SynchronizationContext.Current;
+        new Thread(Work).Start();
+    }
+    void Work()
+    {
+        Thread.Sleep(5000); // Simulate time-consuming task
+        UpdateMessage("The answer");
+    }
+    void UpdateMessage(string message)
+    {
+        // Marshal the delegate to the UI thread:
+        _uiSyncContext.Post(_ => txtMessage.Text = message, null);
+    }
+}
+```
