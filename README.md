@@ -75,3 +75,9 @@ Thread.Sleep (500); // Sleep for 500 milliseconds
 **Thread.Sleep(0)** relinquishes the thread’s current time slice immediately, voluntarily handing over the CPU to other threads. Thread. **Yield()** does the same thing —except that it relinquishes only to threads running on the same processor.
 
 While waiting on a Sleep or Join, a thread is **blocked**.
+
+## Blocking
+
+A thread is deemed blocked when its execution is paused for some reason, such as when Sleeping or waiting for another to end via Join. A blocked thread immediately yields its processor time slice, and from then on consumes no processor time until its blocking condition is satisfied.
+
+When a thread blocks or unblocks, the operating system performs a **context switch**. This incurs a small overhead, typically one or two microseconds.
