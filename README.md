@@ -180,16 +180,24 @@ When two threads simultaneously contend a **lock** (which can be upon any refere
 
 Locking is not a silver bullet for thread safety—it’s easy to forget to lock around accessing a field, and locking can create problems of its own (such as **deadlocking**).
 
-## Passing Data to a Thread
+## Exception Handling
 
-The easiest way to do this is with a lambda expression that calls the method with the desired arguments:
+Any try/catch/finally blocks in effect when a thread is created are of no relevance to the thread when it starts executing. The try/catch statement in this example is ineffective
 
 ```c#
-static void Main()
-{
-    Thread t = new Thread(() => Print("Hello from t!"));
-    t.Start();
-}
 
-static void Print(string message) { Console.WriteLine(message); }
+public static void Main()
+{
+    try
+    {
+        new Thread(Go).Start();
+    }
+    catch (Exception ex)
+    {
+        // We'll never get here!
+        Console.WriteLine("Exception!");
+    }
+}
+static void Go() { throw null; } // Throws a NullReferenceException
+
 ```
