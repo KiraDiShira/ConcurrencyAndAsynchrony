@@ -149,3 +149,47 @@ class ThreadTest
 ```
 
 it’s better to avoid shared state altogether where possible. We’ll see later how asynchronous programming patterns help with this.
+
+## Locking and Thread Safety
+
+We can fix the previous example by obtaining an exclusive lock while reading and writing to the shared field.
+
+```c#
+
+class ThreadSafe
+{
+    static bool _done;
+    static readonly object _locker = new object();
+    static void Main()
+    {
+        new Thread(Go).Start();
+        Go();
+    }
+    static void Go()
+    {
+        lock (_locker)
+        {
+            if (!_done) { Console.WriteLine("Done"); _done = true; }
+        }
+    }
+}
+
+```
+
+When two threads simultaneously contend a **lock** (which can be upon any reference-type object, in this case, _locker), one thread waits, or blocks, until the lock becomes available. In this case, it ensures only one thread can enter its code block at a time, and “Done” will be printed just once. Code that’s protected in such a manner—from indeterminacy in a multithreaded context—is called **thread-safe**.
+
+Locking is not a silver bullet for thread safety—it’s easy to forget to lock around accessing a field, and locking can create problems of its own (such as **deadlocking**).
+
+## Passing Data to a Thread
+
+The easiest way to do this is with a lambda expression that calls the method with the desired arguments:
+
+```c#
+static void Main()
+{
+    Thread t = new Thread(() => Print("Hello from t!"));
+    t.Start();
+}
+
+static void Print(string message) { Console.WriteLine(message); }
+```
