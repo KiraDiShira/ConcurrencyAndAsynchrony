@@ -14,4 +14,5 @@ kind of shared field. And if the operation throws an exception, catching and pro
 must Join it (blocking your own thread in the process).
 
 ```c#
-
+Task.Run (() => Console.WriteLine ("Foo"));
+```
