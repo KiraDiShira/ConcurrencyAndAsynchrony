@@ -93,6 +93,8 @@ awaiter.OnCompleted(() =>
 ```
 Calling GetAwaiter on the task returns an awaiter object whose OnCompleted method tells the antecedent task (primeNumberTask) to execute a delegate when it finishes (or faults).
 
+`An awaiter is any object that exposes the two methods that we’ve just seen (OnCompleted and GetResult), and a Boolean property called IsCompleted. There’s no interface or base class to unify all of these members (although OnCompleted is part of the interface INotifyCompletion).`
+
 If an antecedent task faults, the exception is re-thrown when the continuation code calls awaiter.GetResult(). Rather than calling GetResult, we could simply access the Result property of the antecedent. The benefit of calling GetResult is that if the antecedent faults, the exception is thrown directly without being wrapped in AggregateException, allowing for simpler and cleaner catch blocks.
 
 If a synchronization context is present, OnCompleted automatically captures it and posts the continuation to that context. This is very useful in rich-client applications, as it bounces the continuation back to the UI thread. In writing libraries, however, it’s not usually desirable because the relatively expensive UI-thread-bounce should occur just once upon leaving the library, rather than between method calls. Hence you can defeat it the ConfigureAwait method:
