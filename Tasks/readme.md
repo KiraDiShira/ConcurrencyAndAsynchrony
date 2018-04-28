@@ -72,6 +72,7 @@ catch (AggregateException aex)
         throw;
 }
 ```
+The CLR wraps the exception in an AggregateException in order to play well with parallel programming scenarios; we discuss this in Chapter 23.
 
 ## Continuations
 
