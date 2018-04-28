@@ -74,3 +74,45 @@ catch (AggregateException aex)
 ```
 
 ## Continuations
+
+A continuation says to a task, “when you’ve finished, continue by doing something else.” There are two ways to attach a continuation to a task.
+
+```c#
+Task<int> primeNumberTask = Task.Run(() =>
+    Enumerable.Range(2, 3000000).Count(n =>
+        Enumerable.Range(2, (int)Math.Sqrt(n) - 1).All(i => n % i > 0)));
+
+var awaiter = primeNumberTask.GetAwaiter();
+
+awaiter.OnCompleted(() =>
+{
+    int result = awaiter.GetResult();
+    Console.WriteLine(result); // Writes result
+});
+
+```
+Calling GetAwaiter on the task returns an awaiter object whose OnCompleted method tells the antecedent task (primeNumberTask) to execute a delegate when it finishes (or faults).
+
+If an antecedent task faults, the exception is re-thrown when the continuation code calls awaiter.GetResult(). Rather than calling GetResult, we could simply access the Result property of the antecedent. The benefit of calling GetResult is that if the antecedent faults, the exception is thrown directly without being wrapped in AggregateException, allowing for simpler and cleaner catch blocks.
+
+If a synchronization context is present, OnCompleted automatically captures it and posts the continuation to that context. This is very useful in rich-client applications, as it bounces the continuation back to the UI thread. In writing libraries, however, it’s not usually desirable because the relatively expensive UI-thread-bounce should occur just once upon leaving the library, rather than between method calls. Hence you can defeat it the ConfigureAwait method:
+
+```c#
+var awaiter = primeNumberTask.ConfigureAwait (false).GetAwaiter();
+```
+
+If no synchronization context is present—or you use ConfigureAwait(false)—the continuation will (in general) execute on the same thread as the antecedent, avoiding unnecessary overhead.
+
+The other way to attach a continuation is by calling the task’s **ContinueWith** method:
+
+```c#
+
+primeNumberTask.ContinueWith(antecedent =>
+{
+    int result = antecedent.Result;
+    Console.WriteLine(result); // Writes 123
+});
+
+```
+
+ContinueWith itself returns a Task, which is useful if you want to attach further continuations. However, you must deal directly with AggregateException if the task faults, and write extra code to marshal the continuation in UI applications (see “Task Schedulers” on page 943 in Chapter 23). And in non-UI contexts, you must specify TaskContinuationOptions.ExecuteSynchronously if you want the continuation to execute on the same thread; otherwise it will bounce to the thread pool. ContinueWith is particularly useful in parallel programming scenarios; we cover it in detail in “Continuations” on page 938 in Chapter 23.
