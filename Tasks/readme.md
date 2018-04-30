@@ -193,3 +193,15 @@ awaiter.OnCompleted (() => Console.WriteLine (awaiter.GetResult()));
 ```
 
 Our use of TaskCompletionSource without a thread means that a thread is engaged only when the continuation starts, five seconds later.
+
+## Task.Delay
+
+**Task.Delay** is the asynchronous equivalent of **Thread.Sleep**.
+
+```c#
+Task.Delay (5000).GetAwaiter().OnCompleted (() => Console.WriteLine (42));
+```
+or
+```c#
+Task.Delay (5000).ContinueWith (ant => Console.WriteLine (42));
+```
