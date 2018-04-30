@@ -112,3 +112,16 @@ Func<Task> unnamed = async () =>
     Console.WriteLine("Foo");
 };
 ```
+## Asynchrony and Synchronization Contexts
+
+```c#
+async void ButtonClick(object sender, RoutedEventArgs args)
+{
+    await Task.Delay(1000);
+    throw new Exception("Will this be ignored?");
+}
+```
+
+When the button is clicked and the event handler runs, execution returns normally to the message loop after the await statement, and the exception that’s thrown a second later cannot be caught by the catch block in the message loop.
+
+To mitigate this problem, AsyncVoidMethodBuilder catches unhandled exceptions (in void-returning asynchronous functions), and posts them to the synchronization context if present, ensuring that global exception-handling events still fire.
