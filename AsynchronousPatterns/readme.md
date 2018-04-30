@@ -89,3 +89,44 @@ async Task Counter(CancellationToken cancellationToken)
     }
 }
 ```
+
+## Task Combinators
+
+The CLR includes two task combinators: **Task.WhenAny** and **Task.WhenAll**. In describing them, we’ll assume the following methods are defined:
+
+```c#
+async Task<int> Delay1() { await Task.Delay (1000); return 1; }
+async Task<int> Delay2() { await Task.Delay (2000); return 2; }
+async Task<int> Delay3() { await Task.Delay (3000); return 3; }
+```
+```c#
+Task<int> winningTask = await Task.WhenAny (Delay1(), Delay2(), Delay3());
+Console.WriteLine ("Done");
+Console.WriteLine (winningTask.Result); // 1
+```
+
+Because Task.WhenAny itself returns a task, we await it, which returns the task that finished first. Our example is entirely nonblocking—including the last line when we access the Result property (because winningTask will already have finished). Nonetheless, it’s usually better to await the winningTask:
+
+```c#
+Console.WriteLine (await winningTask); // 1
+```
+because any exceptions are then re-thrown without an AggregateException wrapping. In fact, we can perform both awaits in one step:
+
+```c#
+int answer = await await Task.WhenAny (Delay1(), Delay2(), Delay3());
+```
+If a nonwinning task subsequently faults, the exception will go unobserved unless you subsequently await the task (or query its Exception property).
+
+```c#
+await Task.WhenAll (Delay1(), Delay2(), Delay3());
+```
+
+We could get a similar result by awaiting task1, task2 and task3 in turn rather than using WhenAll:
+
+```c#
+Task task1 = Delay1(), task2 = Delay2(), task3 = Delay3();
+await task1; await task2; await task3;
+```
+
+The difference, is that should task1 fault, we’ll never get to await task2/task3, and any of their exceptions will go unobserved. In contrast, Task.WhenAll doesn’t complete until all tasks have completed—even when there’s a fault. And if there are multiple faults, their exceptions are combined into the task’s AggregateException (this is when AggregateException actually becomes useful—should you be interested in all the exceptions, that is).
+
