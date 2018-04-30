@@ -146,4 +146,50 @@ public class TaskCompletionSource<TResult>
 
 Calling any of these methods signals the task, putting it into a completed, faulted, or canceled state. You’re supposed to call one of these methods exactly once: if called again, SetResult, SetException, or SetCanceled will throw an exception, whereas the Try* methods return false.
 
+The following example prints 42 after waiting for five seconds:
 
+```c#
+
+Task<int> task = Run(() => { Thread.Sleep(5000); return 42; });
+
+Task<TResult> Run<TResult>(Func<TResult> function)
+{
+    var tcs = new TaskCompletionSource<TResult>();
+    new Thread(() =>
+    {
+        try { tcs.SetResult(function()); }
+        catch (Exception ex) { tcs.SetException(ex); }
+    }).Start();
+    return tcs.Task;
+}
+
+```
+
+**Calling this method is equivalent to calling Task.Factory.StartNew with the Task CreationOptions.LongRunning option to request a nonpooled thread.** 
+
+The **real power of TaskCompletionSource** is in creating tasks that don’t tie up threads. For instance, consider a task that waits for five seconds and then returns the number 42. We can write this without a thread by using the Timer class, which with the help of the CLR (and in turn, the operating system) fires an event in x milliseconds:
+
+```c#
+
+Task<int> GetAnswerToLife()
+{
+    var tcs = new TaskCompletionSource<int>();
+    // Create a timer that fires once in 5000 ms:
+    var timer = new System.Timers.Timer(5000) { AutoReset = false };
+    timer.Elapsed += delegate { timer.Dispose(); tcs.SetResult(42); };
+    timer.Start();
+    return tcs.Task;
+}
+
+```
+
+Hence our method returns a task that completes five seconds later, with a result of 42. By attaching a continuation to the task, we can write its result without blocking any thread:
+
+```c#
+
+var awaiter = GetAnswerToLife().GetAwaiter();
+awaiter.OnCompleted (() => Console.WriteLine (awaiter.GetResult()));
+
+```
+
+Our use of TaskCompletionSource without a thread means that a thread is engaged only when the continuation starts, five seconds later.
