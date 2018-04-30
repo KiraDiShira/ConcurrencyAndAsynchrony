@@ -119,3 +119,31 @@ primeNumberTask.ContinueWith(antecedent =>
 ```
 
 ContinueWith itself returns a Task, which is useful if you want to attach further continuations. However, you must deal directly with AggregateException if the task faults, and write extra code to marshal the continuation in UI applications (see “Task Schedulers” on page 943 in Chapter 23). And in non-UI contexts, you must specify TaskContinuationOptions.ExecuteSynchronously if you want the continuation to execute on the same thread; otherwise it will bounce to the thread pool. ContinueWith is particularly useful in parallel programming scenarios; we cover it in detail in “Continuations” on page 938 in Chapter 23.
+
+## TaskCompletionSource
+
+Another way to create a task is with **TaskCompletionSource**. 
+
+It works by giving you a “slave” task that you manually drive—by indicating when the operation finishes or faults. This is ideal for I/Obound work: you get all the benefits of tasks (with their ability to propagate return values, exceptions, and continuations) without blocking a thread for the duration of the operation.
+
+To use TaskCompletionSource, you simply instantiate the class. It exposes a Task property that returns a task upon which you can wait and attach continuations— just as with any other task. The task, however, is controlled entirely by the TaskCom pletionSource object via the following methods:
+
+```c#
+
+public class TaskCompletionSource<TResult>
+{
+    public void SetResult(TResult result);
+    public void SetException(Exception exception);
+    public void SetCanceled();
+    public bool TrySetResult(TResult result);
+    public bool TrySetException(Exception exception);
+    public bool TrySetCanceled();
+    public bool TrySetCanceled(CancellationToken cancellationToken);
+        ...
+}
+
+```
+
+Calling any of these methods signals the task, putting it into a completed, faulted, or canceled state. You’re supposed to call one of these methods exactly once: if called again, SetResult, SetException, or SetCanceled will throw an exception, whereas the Try* methods return false.
+
+
