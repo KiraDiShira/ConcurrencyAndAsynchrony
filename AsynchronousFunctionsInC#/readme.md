@@ -92,4 +92,23 @@ Internally, this results in the TaskCompletionSource being signaled with a value
 
 The compiler’s ability to manufacture tasks for asynchronous functions means that for the most part, you need to explicitly instantiate a TaskCompletionSource only in bottom-level methods that initiate I/O-bound concurrency. (And for methods that initiate compute-bound currency, you create the task with Task.Run.)
     
-    
+# Asynchronous Lambda Expressions
+
+Just as ordinary named methods can be asynchronous:
+
+```c#
+async Task NamedMethod()
+{
+    await Task.Delay(1000);
+    Console.WriteLine("Foo");
+}
+```
+so can unnamed methods (lambda expressions and anonymous methods), if preceded by the async keyword:
+
+```c#
+Func<Task> unnamed = async () =>
+{
+    await Task.Delay(1000);
+    Console.WriteLine("Foo");
+};
+```
