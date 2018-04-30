@@ -92,7 +92,7 @@ Internally, this results in the TaskCompletionSource being signaled with a value
 
 The compiler’s ability to manufacture tasks for asynchronous functions means that for the most part, you need to explicitly instantiate a TaskCompletionSource only in bottom-level methods that initiate I/O-bound concurrency. (And for methods that initiate compute-bound currency, you create the task with Task.Run.)
     
-# Asynchronous Lambda Expressions
+## Asynchronous Lambda Expressions
 
 Just as ordinary named methods can be asynchronous:
 
@@ -125,3 +125,11 @@ async void ButtonClick(object sender, RoutedEventArgs args)
 When the button is clicked and the event handler runs, execution returns normally to the message loop after the await statement, and the exception that’s thrown a second later cannot be caught by the catch block in the message loop.
 
 To mitigate this problem, AsyncVoidMethodBuilder catches unhandled exceptions (in void-returning asynchronous functions), and posts them to the synchronization context if present, ensuring that global exception-handling events still fire.
+
+The compiler applies this logic only to void-returning asynchronous functions. So if we changed ButtonClick to return a Task instead of void, the unhandled exception would fault the resultant Task, which would then have nowhere to go (resulting in an unobserved exception).
+
+An interesting nuance is that it makes no difference whether you throw before or after an await. So in the following example, the exception is posted to the synchronization context (if present) and never to the caller:
+
+```c#
+async void Foo() { throw null; await Task.Delay(1000); }
+```
