@@ -3,6 +3,10 @@
 # Asynchronous Functions in C#
 
 - [Awaiting](#awaiting)
+- [Writing Asynchronous Functions](#writing-asynchronous-functions)
+- [Returning Task< TResult >]
+- [Asynchronous Lambda Expressions](#asynchronous-lambda-expressions)
+- [Asynchrony and Synchronization Contexts](#asynchrony-and-synchronization-contexts)
 
 ## Awaiting
 
