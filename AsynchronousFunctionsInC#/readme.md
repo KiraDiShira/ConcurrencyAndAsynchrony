@@ -88,6 +88,8 @@ async Task<int> GetAnswerToLife()
     return answer; // Method has return type Task<int> we return int
 }
 ```
+Internally, this results in the TaskCompletionSource being signaled with a value rather than null.
 
+The compiler’s ability to manufacture tasks for asynchronous functions means that for the most part, you need to explicitly instantiate a TaskCompletionSource only in bottom-level methods that initiate I/O-bound concurrency. (And for methods that initiate compute-bound currency, you create the task with Task.Run.)
     
     
