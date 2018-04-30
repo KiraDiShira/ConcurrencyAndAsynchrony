@@ -4,7 +4,7 @@
 
 - [Awaiting](#awaiting)
 - [Writing Asynchronous Functions](#writing-asynchronous-functions)
-- [Returning Task< TResult >]
+- [Returning Task< TResult >](#https://github.com/KiraDiShira/ConcurrencyAndAsynchrony/blob/master/AsynchronousFunctionsInC%23/readme.md#returning-task-tresult-)
 - [Asynchronous Lambda Expressions](#asynchronous-lambda-expressions)
 - [Asynchrony and Synchronization Contexts](#asynchrony-and-synchronization-contexts)
 
