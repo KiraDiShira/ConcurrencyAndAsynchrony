@@ -76,5 +76,18 @@ And because we’ve declared Go with a Task return type, Go itself is awaitable.
 
 The compiler expands asynchronous functions that return tasks into code that leverages TaskCompletionSource to create a task that it then signals or faults.
 
-## Returning Task<TResult>
+## Returning Task< TResult >
 
+You can return a Task< TResult > if the method body returns TResult:
+
+```c#
+async Task<int> GetAnswerToLife()
+{
+    await Task.Delay(5000);
+    int answer = 21 * 2;
+    return answer; // Method has return type Task<int> we return int
+}
+```
+
+    
+    
