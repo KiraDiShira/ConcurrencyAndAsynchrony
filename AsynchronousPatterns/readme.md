@@ -1,6 +1,9 @@
+- [index](https://github.com/KiraDiShira/ConcurrencyAndAsynchrony#concurrency-and-asynchrony)
+
 # Asynchronous Patterns
 
 - [Cancellation](#cancellation)
+- [Task Combinators](#task-combinators)
 
 ## Cancellation
 
